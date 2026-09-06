@@ -1,0 +1,298 @@
+
+<style>
+#erd { width: 100%; overflow-x: auto; }
+#erd svg { max-width: 100%; }
+</style>
+<div id="erd"></div>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"Anthropic Sans", sans-serif',
+  themeVariables: {
+    darkMode: dark,
+    fontSize: '12px',
+    fontFamily: '"Anthropic Sans", sans-serif',
+    lineColor: dark ? '#9c9a92' : '#73726c',
+    textColor: dark ? '#c2c0b6' : '#3d3d3a',
+    primaryColor: dark ? '#2a2a28' : '#f0eeea',
+    primaryBorderColor: dark ? '#555' : '#aaa',
+    edgeLabelBackground: dark ? '#1a1a18' : '#f8f7f3',
+  },
+});
+
+const diagram = `erDiagram
+  DEPARTMENT {
+    int dept_id PK
+    varchar dept_name
+    varchar location
+  }
+
+  DESIGNATION {
+    int designation_id PK
+    int dept_id FK
+    varchar job_title
+    varchar parent_level
+    varchar min_salary
+    varchar max_salary
+  }
+
+  EMPLOYEE {
+    int employee_id PK
+    int dept_id FK
+    int designation_id FK
+    int manager_id FK
+    varchar emp_first_name
+    varchar emp_last_name
+    varchar gender
+    varchar mobile
+    varchar email
+    int age
+    date dob
+    date face_date
+    date employment_date
+  }
+
+  EMPLOYEE_EMAIL {
+    int employee_id FK
+    varchar email
+  }
+
+  EMPLOYEE_PHONE {
+    int employee_id FK
+    varchar phone
+  }
+
+  USER {
+    int user_id PK
+    int role_id FK
+    int employee_id FK
+    varchar username
+    varchar password_hash
+  }
+
+  ROLE {
+    int role_id PK
+    varchar role_name
+  }
+
+  PERMISSION {
+    int permission_id PK
+    varchar permission_name
+  }
+
+  ROLE_PERMISSION {
+    int role_id FK
+    int permission_id FK
+  }
+
+  ATTENDANCE {
+    int attendance_id PK
+    int employee_id FK
+    date date
+    time check_in_time
+    time check_out_time
+    varchar status
+  }
+
+  LEAVE {
+    int leave_id PK
+    int employee_id FK
+    varchar leave_type
+    date start_date
+    date end_date
+    varchar status
+    varchar approved_status
+  }
+
+  PAYROLL {
+    int payroll_id PK
+    int employee_id FK
+    varchar payroll_week
+    decimal total_allowances
+    decimal net_salary
+  }
+
+  SALARY_SLIP {
+    int slip_id PK
+    int payroll_id FK
+    date generation_date
+    decimal slip_credit
+    varchar slip_id_ref
+  }
+
+  ALLOWANCE {
+    int allowance_id PK
+    varchar allowance_name
+  }
+
+  PAYROLL_ALLOWANCE {
+    int payroll_id FK
+    int allowance_id FK
+    decimal amount
+  }
+
+  DEDUCTION {
+    int deduction_id PK
+    varchar type
+  }
+
+  PAYROLL_DEDUCTION {
+    int pay_id FK
+    int deduction_id FK
+    decimal amount
+  }
+
+  TRAINING {
+    int training_id PK
+    int performance_id FK
+    int employee_id FK
+    varchar training_title
+    varchar trainer_name
+    date start_date
+    date end_date
+    varchar description
+  }
+
+  Performance {
+    int performance_id PK
+    int employee_id FK
+    datetime access_start_date
+    varchar access_platform
+  }
+
+  Comments {
+    int comment_id PK
+    int performance_id FK
+    varchar comment
+    int created_by FK
+  }
+
+  JOB_POSTING {
+    int job_id PK
+    int designation_id FK
+    int dept_id FK
+    int num_posted
+    int num_required
+    int open_position
+    varchar job_title
+    varchar min_salary
+    varchar max_salary
+    text description
+    text requirement
+  }
+
+  CANDIDATE {
+    int candidate_id PK
+    int job_id FK
+    varchar candidate_firstname
+    varchar candidate_lastname
+    varchar preference_value
+    varchar app_status
+    varchar source
+  }
+
+  CANDIDATE_EMAIL {
+    int candidate_id FK
+    varchar email
+  }
+
+  CANDIDATE_PHONE {
+    int candidate_id FK
+    varchar phone
+  }
+
+  RECRUITMENT {
+    int recruitment_id PK
+    int job_id FK
+    int candidate_id FK
+    date join_date
+    varchar status
+  }
+
+  INTERVIEW {
+    int interview_id PK
+    int job_id FK
+    int candidate_id FK
+    int interviewer_id FK
+    date interview_date
+    varchar interview_status
+    varchar result
+    text remarks
+  }
+
+  JOBPOSTING_SKILL {
+    int job_id FK
+    int skill_id FK
+  }
+
+  SKILL {
+    int skill_id PK
+    varchar skill_name
+  }
+
+  DEPARTMENT ||--o{ DESIGNATION : "has"
+  DEPARTMENT ||--o{ EMPLOYEE : "employs"
+  DEPARTMENT ||--o{ JOB_POSTING : "posts"
+  DESIGNATION ||--o{ EMPLOYEE : "assigned to"
+  DESIGNATION ||--o{ JOB_POSTING : "for"
+  EMPLOYEE ||--o| EMPLOYEE_EMAIL : "has"
+  EMPLOYEE ||--o| EMPLOYEE_PHONE : "has"
+  EMPLOYEE ||--o| USER : "has account"
+  EMPLOYEE ||--o{ ATTENDANCE : "logs"
+  EMPLOYEE ||--o{ LEAVE : "requests"
+  EMPLOYEE ||--o{ PAYROLL : "receives"
+  EMPLOYEE ||--o{ Performance : "reviewed in"
+  EMPLOYEE ||--o{ TRAINING : "enrolled in"
+  EMPLOYEE ||--o{ INTERVIEW : "conducts as interviewer"
+  ROLE ||--o{ USER : "assigned to"
+  ROLE ||--o{ ROLE_PERMISSION : "has"
+  PERMISSION ||--o{ ROLE_PERMISSION : "granted via"
+  PAYROLL ||--o| SALARY_SLIP : "generates"
+  PAYROLL ||--o{ PAYROLL_ALLOWANCE : "includes"
+  PAYROLL ||--o{ PAYROLL_DEDUCTION : "deducts"
+  ALLOWANCE ||--o{ PAYROLL_ALLOWANCE : "used in"
+  DEDUCTION ||--o{ PAYROLL_DEDUCTION : "used in"
+  Performance ||--o{ TRAINING : "linked to"
+  Performance ||--o{ Comments : "has"
+  JOB_POSTING ||--o{ CANDIDATE : "attracts"
+  JOB_POSTING ||--o{ RECRUITMENT : "leads to"
+  JOB_POSTING ||--o{ INTERVIEW : "schedules"
+  JOB_POSTING ||--o{ JOBPOSTING_SKILL : "requires"
+  SKILL ||--o{ JOBPOSTING_SKILL : "listed in"
+  CANDIDATE ||--o| CANDIDATE_EMAIL : "has"
+  CANDIDATE ||--o| CANDIDATE_PHONE : "has"
+  CANDIDATE ||--o{ RECRUITMENT : "part of"
+  CANDIDATE ||--o{ INTERVIEW : "attends"
+`;
+
+const { svg } = await mermaid.render('erd-svg', diagram);
+document.getElementById('erd').innerHTML = svg;
+
+document.querySelectorAll('#erd svg .node').forEach(node => {
+  const firstPath = node.querySelector('path[d]');
+  if (!firstPath) return;
+  const d = firstPath.getAttribute('d');
+  const nums = d.match(/-?[\d.]+/g)?.map(Number);
+  if (!nums || nums.length < 8) return;
+  const xs = [nums[0], nums[2], nums[4], nums[6]];
+  const ys = [nums[1], nums[3], nums[5], nums[7]];
+  const x = Math.min(...xs), y = Math.min(...ys);
+  const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('x', x); rect.setAttribute('y', y);
+  rect.setAttribute('width', w); rect.setAttribute('height', h);
+  rect.setAttribute('rx', '8');
+  for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
+    if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+  }
+  firstPath.replaceWith(rect);
+});
+
+document.querySelectorAll('#erd svg .row-rect-odd path, #erd svg .row-rect-even path').forEach(p => {
+  p.setAttribute('stroke', 'none');
+});
+</script>
